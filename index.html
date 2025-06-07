@@ -221,57 +221,49 @@
     }
 
     btnOuvir.addEventListener("click", async () => {
-      const texto = textoEl.value.trim();
-      msgErro.textContent = "";
-      limparAudio();
+  const texto = textoEl.value.trim();
+  msgErro.textContent = "";
+  limparAudio();
 
-      if (!texto) {
-        alert("Digite um texto primeiro!");
-        return;
-      }
+  if (!texto) {
+    alert("Digite um texto primeiro!");
+    return;
+  }
 
-      btnOuvir.disabled = true;
-      btnOuvir.textContent = "Gerando áudio...";
+  btnOuvir.disabled = true;
+  btnOuvir.textContent = "Gerando áudio...";
 
-      try {
-        const response = await fetch("http://localhost:3000/api/tts", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ text: texto }),
-});
-            model_id: "eleven_multilingual_v2",
-            voice_settings: {
-              stability: 0.4,
-              similarity_boost: 0.8,
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
-
-        const blob = await response.blob();
-        currentAudioUrl = URL.createObjectURL(blob);
-        player.src = currentAudioUrl;
-        player.style.display = "block";
-        player.play();
-
-        // Mostrar botão play/pause
-        playPauseBtn.style.display = "inline-block";
-        playPauseBtn.textContent = "⏸ Pausar";
-
-      } catch (e) {
-        msgErro.textContent = "Erro ao gerar voz: " + e.message;
-      } finally {
-        btnOuvir.disabled = false;
-        btnOuvir.textContent = "🔊 Ouvir Texto";
-      }
+  try {
+    const response = await fetch("http://localhost:3000/api/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: texto }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erro ${response.status}: ${errorText}`);
+    }
+
+    const blob = await response.blob();
+    currentAudioUrl = URL.createObjectURL(blob);
+    player.src = currentAudioUrl;
+    player.style.display = "block";
+    player.play();
+
+    // Mostrar botão play/pause
+    playPauseBtn.style.display = "inline-block";
+    playPauseBtn.textContent = "⏸ Pausar";
+
+  } catch (e) {
+    msgErro.textContent = "Erro ao gerar voz: " + e.message;
+  } finally {
+    btnOuvir.disabled = false;
+    btnOuvir.textContent = "🔊 Ouvir Texto";
+  }
+});
     // Botão play/pause
     playPauseBtn.addEventListener("click", () => {
       if (player.paused) {
