@@ -2,9 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Leitor com ElevenLabs</title>
+  <title>Leitor com IA</title>
 </head>
 <body>
+  <h2>Leitor de Texto com IA</h2>
   <textarea id="texto" rows="5" cols="50" placeholder="Cole seu texto aqui..."></textarea><br>
   <button onclick="lerTexto()">Ouvir</button>
   <audio id="player" controls style="display: none;"></audio>
@@ -14,12 +15,15 @@
       const texto = document.getElementById("texto").value;
       const player = document.getElementById("player");
 
-      if (!texto) return alert("Digite um texto primeiro!");
+      if (!texto) {
+        alert("Digite um texto primeiro!");
+        return;
+      }
 
-      const response = await fetch("https://api.elevenlabs.io/v1/text-to-speech/bJrNspxJVFovUxNBQ0wh", {
+      const response = await fetch("https://api.elevenlabs.io/v1/text-to-speech/NGS0ZsC7j4t4dCWbPdgO", {
         method: "POST",
         headers: {
-          "xi-api-key": "sk_811824bf52af7437c909b304d4b68bbc3f6a3fc5fd7e4922",
+          "xi-api-key": "sk_d09dd66da3a6a75cb4e86b8dbe0ddfa17db5e278bb14150c",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -33,16 +37,14 @@
       });
 
       if (!response.ok) {
-  const errorText = await response.text();
-  console.error("Erro ao gerar voz:", response.status, errorText);
-  alert("Erro ao gerar voz: " + response.status);
-  return;
-}
-
+        const errorText = await response.text();
+        console.error("Erro ao gerar voz:", response.status, errorText);
+        alert("Erro ao gerar voz: " + response.status);
+        return;
+      }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-
       player.src = url;
       player.style.display = 'block';
       player.play();
