@@ -2,13 +2,78 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Leitor com IA</title>
+  <title>Leitor com Voz Realista</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      resize: none;
+      outline: none;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #4338ca;
+    }
+
+    audio {
+      margin-top: 20px;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-  <h2>Leitor de Texto com IA</h2>
-  <textarea id="texto" rows="5" cols="50" placeholder="Cole seu texto aqui..."></textarea><br>
-  <button onclick="lerTexto()">Ouvir</button>
-  <audio id="player" controls style="display: none;"></audio>
+  <div class="container">
+    <h1>Leitor com Voz IA</h1>
+    <textarea id="texto" placeholder="Cole seu texto aqui..."></textarea><br>
+    <button onclick="lerTexto()">🔊 Ouvir Texto</button>
+    <audio id="player" controls style="display: none;"></audio>
+  </div>
 
   <script>
     async function lerTexto() {
@@ -38,8 +103,7 @@
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Erro ao gerar voz:", response.status, errorText);
-        alert("Erro ao gerar voz: " + response.status);
+        alert("Erro ao gerar voz: " + response.status + "\n" + errorText);
         return;
       }
 
