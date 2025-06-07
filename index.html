@@ -1,317 +1,109 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Leitor com Voz IA - Tema Claro/Escuro</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg-light: #f2f2f2;
-    --text-light: #222;
-    --container-bg-light: #fff;
-    --btn-bg-light: #4f46e5;
-    --btn-hover-light: #4338ca;
+<script>
+  // URL do backend (mude para o endereço do seu servidor quando publicar)
+  const BACKEND_URL = "http://localhost:3000/api/tts";
 
-    --bg-dark: #121212;
-    --text-dark: #eee;
-    --container-bg-dark: #1e1e1e;
-    --btn-bg-dark: #7c3aed;
-    --btn-hover-dark: #6b21a8;
-  }
+  const textoEl = document.getElementById("texto");
+  const contador = document.getElementById("contador");
+  const btnOuvir = document.getElementById("btnOuvir");
+  const player = document.getElementById("player");
+  const playPauseBtn = document.getElementById("playPauseBtn");
+  const msgErro = document.getElementById("msgErro");
+  const temaToggle = document.getElementById("temaToggle");
 
-  body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-light);
-    color: var(--text-light);
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-  }
+  let currentAudioUrl = null;
+  const maxCaracteres = 10000;
 
-  body.dark {
-    background-color: var(--bg-dark);
-    color: var(--text-dark);
-  }
-
-  /* Menu lateral */
-  .menu {
-    width: 220px;
-    background-color: var(--container-bg-light);
-    padding: 20px;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    transition: background-color 0.3s ease;
-  }
-  body.dark .menu {
-    background-color: var(--container-bg-dark);
-    box-shadow: 2px 0 8px rgba(255,255,255,0.1);
-  }
-
-  .menu h2 {
-    margin: 0 0 10px 0;
-    font-weight: 600;
-  }
-
-  .menu label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .container {
-    flex: 1;
-    padding: 40px 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-width: 700px;
-    margin: auto;
-  }
-
-  textarea {
-    width: 100%;
-    height: 140px;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    resize: none;
-    outline: none;
-    background-color: var(--container-bg-light);
-    color: var(--text-light);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  body.dark textarea {
-    background-color: #2c2c2c;
-    color: var(--text-dark);
-    border-color: #555;
-  }
-
-  button {
-    margin-top: 20px;
-    background-color: var(--btn-bg-light);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  button:hover {
-    background-color: var(--btn-hover-light);
-  }
-
-  body.dark button {
-    background-color: var(--btn-bg-dark);
-  }
-  body.dark button:hover {
-    background-color: var(--btn-hover-dark);
-  }
-
-  /* Botão play/pause estilizado */
-  #playPauseBtn {
-    margin-top: 20px;
-    background: #10b981;
-    border: none;
-    color: white;
-    padding: 12px 30px;
-    font-weight: 600;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: none; /* Começa escondido */
-  }
-  #playPauseBtn:hover {
-    background: #059669;
-  }
-
-  /* Mensagem de erro */
-  #msgErro {
-    margin-top: 10px;
-    color: #ef4444;
-    font-weight: 600;
-  }
-
-  /* Contador de caracteres */
-  #contador {
-    margin-top: 8px;
-    font-size: 14px;
-    color: #666;
-  }
-  body.dark #contador {
-    color: #aaa;
-  }
-
-  /* Área principal flex */
-  .main-area {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Responsivo */
-  @media (max-width: 700px) {
-    body {
-      flex-direction: column;
-      height: auto;
-    }
-    .menu {
-      width: 100%;
-      box-shadow: none;
-      flex-direction: row;
-      justify-content: space-around;
-      padding: 10px;
-    }
-    .container {
-      max-width: 100%;
-      padding: 20px 15px;
-    }
-  }
-</style>
-</head>
-<body>
-  <nav class="menu">
-    <h2>Configurações</h2>
-    <label>
-      <input type="checkbox" id="temaToggle" />
-      Tema Escuro
-    </label>
-    <!-- Futuras opções aqui -->
-  </nav>
-
-  <main class="container">
-    <h1>Leitor com Voz IA</h1>
-    <textarea id="texto" placeholder="Cole seu texto aqui (máx. 10.000 caracteres)" maxlength="10000"></textarea>
-    <div id="contador">0 / 10000 caracteres</div>
-    <button id="btnOuvir">🔊 Ouvir Texto</button>
-    <button id="playPauseBtn">⏸ Pausar</button>
-    <audio id="player" controls style="display:none;"></audio>
-    <div id="msgErro"></div>
-  </main>
-
-  <script>
-    const apiKey = "sk_d09dd66da3a6a75cb4e86b8dbe0ddfa17db5e278bb14150c";
-    const voiceId = "NGS0ZsC7j4t4dCWbPdgO";
-
-    const textoEl = document.getElementById("texto");
-    const contador = document.getElementById("contador");
-    const btnOuvir = document.getElementById("btnOuvir");
-    const player = document.getElementById("player");
-    const playPauseBtn = document.getElementById("playPauseBtn");
-    const msgErro = document.getElementById("msgErro");
-    const temaToggle = document.getElementById("temaToggle");
-
-    let currentAudioUrl = null;
-    const maxCaracteres = 10000;
-
-    // Atualiza contador e verifica limite ao digitar
-    textoEl.addEventListener("input", () => {
-      const qtd = textoEl.value.length;
-      contador.textContent = `${qtd} / ${maxCaracteres} caracteres`;
-      if (qtd > maxCaracteres) {
-        msgErro.textContent = "Você ultrapassou o limite de 10.000 caracteres!";
-        btnOuvir.disabled = true;
-      } else {
-        msgErro.textContent = "";
-        btnOuvir.disabled = false;
-      }
-    });
-
-    // Alterna tema claro/escuro
-    temaToggle.addEventListener("change", () => {
-      if (temaToggle.checked) {
-        document.body.classList.add("dark");
-      } else {
-        document.body.classList.remove("dark");
-      }
-    });
-
-    // Função para parar e limpar áudio atual
-    function limparAudio() {
-      if (!player.paused) player.pause();
-      player.src = "";
-      if (currentAudioUrl) {
-        URL.revokeObjectURL(currentAudioUrl);
-        currentAudioUrl = null;
-      }
-      player.style.display = "none";
-      playPauseBtn.style.display = "none";
-    }
-
-    btnOuvir.addEventListener("click", async () => {
-      const texto = textoEl.value.trim();
-      msgErro.textContent = "";
-      limparAudio();
-
-      if (!texto) {
-        msgErro.textContent = "Digite um texto primeiro!";
-        return;
-      }
-
-      if (texto.length > maxCaracteres) {
-        msgErro.textContent = "Texto muito longo! Reduza para até 10.000 caracteres.";
-        return;
-      }
-
+  textoEl.addEventListener("input", () => {
+    const qtd = textoEl.value.length;
+    contador.textContent = `${qtd} / ${maxCaracteres} caracteres`;
+    if (qtd > maxCaracteres) {
+      msgErro.textContent = "Você ultrapassou o limite de 10.000 caracteres!";
       btnOuvir.disabled = true;
-      btnOuvir.textContent = "Gerando áudio...";
+    } else {
+      msgErro.textContent = "";
+      btnOuvir.disabled = false;
+    }
+  });
 
-      try {
-        const response = await fetch('http://localhost:3000/api/tts', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ text: texto }),
-});
+  temaToggle.addEventListener("change", () => {
+    if (temaToggle.checked) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  });
 
+  function limparAudio() {
+    if (!player.paused) player.pause();
+    player.src = "";
+    if (currentAudioUrl) {
+      URL.revokeObjectURL(currentAudioUrl);
+      currentAudioUrl = null;
+    }
+    player.style.display = "none";
+    playPauseBtn.style.display = "none";
+  }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
+  btnOuvir.addEventListener("click", async () => {
+    const texto = textoEl.value.trim();
+    msgErro.textContent = "";
+    limparAudio();
 
-        const blob = await response.blob();
-        currentAudioUrl = URL.createObjectURL(blob);
-        player.src = currentAudioUrl;
-        player.style.display = "block";
-        player.play();
+    if (!texto) {
+      msgErro.textContent = "Digite um texto primeiro!";
+      return;
+    }
 
-        // Exibe botão pausar
-        playPauseBtn.style.display = "inline-block";
-        playPauseBtn.textContent = "⏸ Pausar";
+    if (texto.length > maxCaracteres) {
+      msgErro.textContent = "Texto muito longo! Reduza para até 10.000 caracteres.";
+      return;
+    }
 
-      } catch (error) {
-        msgErro.textContent = `Erro ao gerar áudio: ${error.message}`;
-      } finally {
-        btnOuvir.disabled = false;
-        btnOuvir.textContent = "🔊 Ouvir Texto";
+    btnOuvir.disabled = true;
+    btnOuvir.textContent = "Gerando áudio...";
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: texto }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText}`);
       }
-    });
 
-    // Botão play/pause para o áudio
-    playPauseBtn.addEventListener("click", () => {
-      if (player.paused) {
-        player.play();
-        playPauseBtn.textContent = "⏸ Pausar";
-      } else {
-        player.pause();
-        playPauseBtn.textContent = "▶️ Continuar";
-      }
-    });
+      const blob = await response.blob();
+      currentAudioUrl = URL.createObjectURL(blob);
+      player.src = currentAudioUrl;
+      player.style.display = "block";
+      player.play();
 
-    // Quando o áudio termina, resetar o botão play/pause
-    player.addEventListener("ended", () => {
-      playPauseBtn.textContent = "▶️ Reproduzir";
-    });
-  </script>
-</body>
-</html>
+      playPauseBtn.style.display = "inline-block";
+      playPauseBtn.textContent = "⏸ Pausar";
+
+    } catch (error) {
+      msgErro.textContent = `Erro ao gerar áudio: ${error.message}`;
+    } finally {
+      btnOuvir.disabled = false;
+      btnOuvir.textContent = "🔊 Ouvir Texto";
+    }
+  });
+
+  playPauseBtn.addEventListener("click", () => {
+    if (player.paused) {
+      player.play();
+      playPauseBtn.textContent = "⏸ Pausar";
+    } else {
+      player.pause();
+      playPauseBtn.textContent = "▶️ Continuar";
+    }
+  });
+
+  player.addEventListener("ended", () => {
+    playPauseBtn.textContent = "▶️ Reproduzir";
+  });
+</script>
