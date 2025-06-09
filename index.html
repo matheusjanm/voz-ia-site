@@ -185,12 +185,31 @@
   }
 </style>
 </head>
+<!-- (Cabeçalho permanece o mesmo) -->
+...
 <body>
   <nav class="menu">
     <h2>Configurações</h2>
     <label>
       <input type="checkbox" id="temaToggle" />
       Tema Escuro
+    </label>
+
+    <label>
+      <span>Voz:</span>
+      <select id="vozSelect">
+        <option value="eleven_monica">Mônica</option>
+        <option value="eleven_antonio">Antônio</option>
+        <option value="eleven_daniel">Daniel</option>
+        <option value="eleven_eduarda">Eduarda</option>
+        <option value="eleven_joao">João</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Velocidade:</span>
+      <input type="range" id="velocidadeRange" min="0.5" max="2" step="0.1" value="1" />
+      <span id="velocidadeValor">1x</span>
     </label>
   </nav>
 
@@ -202,7 +221,6 @@
     <audio id="player" controls style="display:none;"></audio>
     <div id="msgErro"></div>
 
-    <!-- Novo formulário para upload e conversão -->
     <form id="uploadForm">
       <h2>Converter vídeo para MP3</h2>
       <input type="file" id="videoInput" accept="video/*" required />
@@ -218,16 +236,20 @@
     const playPauseBtn = document.getElementById("playPauseBtn");
     const msgErro = document.getElementById("msgErro");
     const temaToggle = document.getElementById("temaToggle");
+    const vozSelect = document.getElementById("vozSelect");
+    const velocidadeRange = document.getElementById("velocidadeRange");
+    const velocidadeValor = document.getElementById("velocidadeValor");
 
     let currentAudioUrl = null;
 
+    // Atualiza exibição da velocidade
+    velocidadeRange.addEventListener("input", () => {
+      velocidadeValor.textContent = velocidadeRange.value + "x";
+    });
+
     // Tema claro/escuro
     temaToggle.addEventListener("change", () => {
-      if (temaToggle.checked) {
-        document.body.classList.add("dark");
-      } else {
-        document.body.classList.remove("dark");
-      }
+      document.body.classList.toggle("dark", temaToggle.checked);
     });
 
     function limparAudio() {
@@ -243,6 +265,8 @@
 
     btnOuvir.addEventListener("click", async () => {
       const texto = textoEl.value.trim();
+      const voice = vozSelect.value;
+      const voice_speed = parseFloat(velocidadeRange.value);
       msgErro.textContent = "";
       limparAudio();
 
@@ -260,12 +284,12 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: texto }),
+          body: JSON.stringify({ text: texto, voice, voice_speed }),
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(Erro ${response.status}: ${errorText});
+          throw new Error(`Erro ${response.status}: ${errorText}`);
         }
 
         const blob = await response.blob();
@@ -299,7 +323,7 @@
       playPauseBtn.style.display = "none";
     });
 
-    // Nova funcionalidade: upload e converter vídeo para MP3
+    // Upload e conversão
     const uploadForm = document.getElementById('uploadForm');
     const videoInput = document.getElementById('videoInput');
     const uploadMsg = document.getElementById('uploadMsg');
@@ -327,16 +351,14 @@
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(Erro ${response.status}: ${errorText});
+          throw new Error(`Erro ${response.status}: ${errorText}`);
         }
 
         const blob = await response.blob();
-
-        // Criar link para download automático
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3"; // mesma base do nome do vídeo, extensão mp3
+        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3";
         document.body.appendChild(a);
         a.click();
         a.remove();
