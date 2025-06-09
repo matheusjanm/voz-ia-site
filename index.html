@@ -6,13 +6,14 @@
 <title>Leitor com Voz IA - Tema Claro/Escuro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 <style>
-  /* (CSS original mantido) */
+  /* (Seu CSS original aqui, mantive o mesmo para não bagunçar) */
   :root {
     --bg-light: #f2f2f2;
     --text-light: #222;
     --container-bg-light: #fff;
     --btn-bg-light: #4f46e5;
     --btn-hover-light: #4338ca;
+
     --bg-dark: #121212;
     --text-dark: #eee;
     --container-bg-dark: #1e1e1e;
@@ -35,6 +36,7 @@
     color: var(--text-dark);
   }
 
+  /* Menu lateral */
   .menu {
     width: 220px;
     background-color: var(--container-bg-light);
@@ -113,7 +115,6 @@
   body.dark button {
     background-color: var(--btn-bg-dark);
   }
-
   body.dark button:hover {
     background-color: var(--btn-hover-dark);
   }
@@ -130,7 +131,6 @@
     transition: background 0.3s ease;
     display: none;
   }
-
   #playPauseBtn:hover {
     background: #059669;
   }
@@ -146,6 +146,7 @@
     flex-direction: column;
   }
 
+  /* Estilo para o form de upload */
   #uploadForm {
     margin-top: 40px;
     padding: 20px;
@@ -155,13 +156,11 @@
     color: var(--text-light);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
   body.dark #uploadForm {
     background-color: #2c2c2c;
     color: var(--text-dark);
     border-color: #555;
   }
-
   #uploadForm input[type="file"] {
     display: block;
     margin-bottom: 15px;
@@ -172,7 +171,6 @@
       flex-direction: column;
       height: auto;
     }
-
     .menu {
       width: 100%;
       box-shadow: none;
@@ -180,7 +178,6 @@
       justify-content: space-around;
       padding: 10px;
     }
-
     .container {
       max-width: 100%;
       padding: 20px 15px;
@@ -190,184 +187,168 @@
 </head>
 <body>
   <nav class="menu">
-    <h2>Menu</h2>
+    <h2>Configurações</h2>
     <label>
       <input type="checkbox" id="temaToggle" />
       Tema Escuro
     </label>
-    <label>
-      <input type="radio" name="menuSelect" value="leitor" checked />
-      Leitor de Texto
-    </label>
-    <label>
-      <input type="radio" name="menuSelect" value="conversor" />
-      Converter MP4 → MP3
-    </label>
   </nav>
 
   <main class="container">
-    <!-- Leitor de Texto -->
-    <section id="leitorSection" class="main-area">
-      <h1>Leitor com Voz IA</h1>
-      <textarea id="texto" placeholder="Cole seu texto aqui..."></textarea>
-      <button id="btnOuvir">🔊 Ouvir Texto</button>
-      <button id="playPauseBtn">⏸ Pausar</button>
-      <audio id="player" controls style="display:none;"></audio>
-      <div id="msgErro"></div>
-    </section>
+    <h1>Leitor com Voz IA</h1>
+    <textarea id="texto" placeholder="Cole seu texto aqui..."></textarea>
+    <button id="btnOuvir">🔊 Ouvir Texto</button>
+    <button id="playPauseBtn">⏸ Pausar</button>
+    <audio id="player" controls style="display:none;"></audio>
+    <div id="msgErro"></div>
 
-    <!-- Conversor de vídeo -->
-    <section id="conversorSection" class="main-area" style="display:none;">
+    <!-- Novo formulário para upload e conversão -->
+    <form id="uploadForm">
       <h2>Converter vídeo para MP3</h2>
-      <form id="uploadForm">
-        <input type="file" id="videoInput" accept="video/*" required />
-        <button type="submit">Converter e Baixar MP3</button>
-        <div id="uploadMsg" style="margin-top:10px; font-weight:600; color:#3b82f6;"></div>
-      </form>
-    </section>
+      <input type="file" id="videoInput" accept="video/*" required />
+      <button type="submit">Converter e Baixar MP3</button>
+      <div id="uploadMsg" style="margin-top:10px; font-weight:600; color:#3b82f6;"></div>
+    </form>
   </main>
 
   <script>
-  const textoEl = document.getElementById("texto");
-  const btnOuvir = document.getElementById("btnOuvir");
-  const player = document.getElementById("player");
-  const playPauseBtn = document.getElementById("playPauseBtn");
-  const msgErro = document.getElementById("msgErro");
-  const temaToggle = document.getElementById("temaToggle");
+    const textoEl = document.getElementById("texto");
+    const btnOuvir = document.getElementById("btnOuvir");
+    const player = document.getElementById("player");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const msgErro = document.getElementById("msgErro");
+    const temaToggle = document.getElementById("temaToggle");
 
-  let currentAudioUrl = null;
+    let currentAudioUrl = null;
 
-  temaToggle.addEventListener("change", () => {
-    document.body.classList.toggle("dark", temaToggle.checked);
-  });
-
-  function limparAudio() {
-    if (!player.paused) player.pause();
-    player.src = "";
-    if (currentAudioUrl) {
-      URL.revokeObjectURL(currentAudioUrl);
-      currentAudioUrl = null;
-    }
-    player.style.display = "none";
-    playPauseBtn.style.display = "none";
-  }
-
-  btnOuvir.addEventListener("click", async () => {
-    const texto = textoEl.value.trim();
-    msgErro.textContent = "";
-    limparAudio();
-
-    if (!texto) {
-      alert("Digite um texto primeiro!");
-      return;
-    }
-
-    btnOuvir.disabled = true;
-    btnOuvir.textContent = "Gerando áudio...";
-
-    try {
-      const response = await fetch("http://localhost:3000/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: texto }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro ${response.status}: ${errorText}`);
-      }
-
-      const blob = await response.blob();
-      currentAudioUrl = URL.createObjectURL(blob);
-      player.src = currentAudioUrl;
-      player.style.display = "block";
-      player.play();
-
-      playPauseBtn.style.display = "inline-block";
-      playPauseBtn.textContent = "⏸ Pausar";
-
-    } catch (e) {
-      msgErro.textContent = "Erro ao gerar voz: " + e.message;
-    } finally {
-      btnOuvir.disabled = false;
-      btnOuvir.textContent = "🔊 Ouvir Texto";
-    }
-  });
-
-  playPauseBtn.addEventListener("click", () => {
-    if (player.paused) {
-      player.play();
-      playPauseBtn.textContent = "⏸ Pausar";
-    } else {
-      player.pause();
-      playPauseBtn.textContent = "▶️ Continuar";
-    }
-  });
-
-  // Alternar entre seções
-  const leitorSection = document.getElementById("leitorSection");
-  const conversorSection = document.getElementById("conversorSection");
-  const menuRadios = document.querySelectorAll('input[name="menuSelect"]');
-
-  menuRadios.forEach((radio) => {
-    radio.addEventListener("change", () => {
-      if (radio.value === "leitor") {
-        leitorSection.style.display = "flex";
-        conversorSection.style.display = "none";
+    // Tema claro/escuro
+    temaToggle.addEventListener("change", () => {
+      if (temaToggle.checked) {
+        document.body.classList.add("dark");
       } else {
-        leitorSection.style.display = "none";
-        conversorSection.style.display = "flex";
+        document.body.classList.remove("dark");
       }
     });
-  });
 
-  // NOVO: manipular o envio do form para converter vídeo em MP3 e baixar
-  const uploadForm = document.getElementById("uploadForm");
-  const videoInput = document.getElementById("videoInput");
-  const uploadMsg = document.getElementById("uploadMsg");
-
-  uploadForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // evita o envio normal do form
-
-    uploadMsg.textContent = "";
-    const file = videoInput.files[0];
-    if (!file) {
-      alert("Por favor, selecione um arquivo de vídeo.");
-      return;
+    function limparAudio() {
+      if (!player.paused) player.pause();
+      player.src = "";
+      if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
+      }
+      player.style.display = "none";
+      playPauseBtn.style.display = "none";
     }
 
-    uploadMsg.textContent = "Convertendo vídeo para MP3...";
+    btnOuvir.addEventListener("click", async () => {
+      const texto = textoEl.value.trim();
+      msgErro.textContent = "";
+      limparAudio();
 
-    try {
-      const formData = new FormData();
-      formData.append("video", file);
-
-      const response = await fetch("/convert", { // ajuste a URL conforme seu backend
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro ${response.status}: ${errorText}`);
+      if (!texto) {
+        alert("Digite um texto primeiro!");
+        return;
       }
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3"; // nome do arquivo com extensão mp3
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      btnOuvir.disabled = true;
+      btnOuvir.textContent = "Gerando áudio...";
 
-      uploadMsg.textContent = "Download iniciado!";
-    } catch (err) {
-      uploadMsg.textContent = "Erro ao converter o vídeo.";
-      console.error(err);
-    }
-  });
-</script>
+      try {
+        const response = await fetch("http://localhost:3000/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: texto }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const blob = await response.blob();
+        currentAudioUrl = URL.createObjectURL(blob);
+        player.src = currentAudioUrl;
+        player.style.display = "block";
+        player.play();
+
+        playPauseBtn.style.display = "inline-block";
+        playPauseBtn.textContent = "⏸ Pausar";
+
+      } catch (e) {
+        msgErro.textContent = "Erro ao gerar voz: " + e.message;
+      } finally {
+        btnOuvir.disabled = false;
+        btnOuvir.textContent = "🔊 Ouvir Texto";
+      }
+    });
+
+    playPauseBtn.addEventListener("click", () => {
+      if (player.paused) {
+        player.play();
+        playPauseBtn.textContent = "⏸ Pausar";
+      } else {
+        player.pause();
+        playPauseBtn.textContent = "▶️ Tocar";
+      }
+    });
+
+    player.addEventListener("ended", () => {
+      playPauseBtn.style.display = "none";
+    });
+
+    // Nova funcionalidade: upload e converter vídeo para MP3
+    const uploadForm = document.getElementById('uploadForm');
+    const videoInput = document.getElementById('videoInput');
+    const uploadMsg = document.getElementById('uploadMsg');
+
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (videoInput.files.length === 0) {
+        alert("Selecione um arquivo de vídeo primeiro.");
+        return;
+      }
+
+      const file = videoInput.files[0];
+      uploadMsg.textContent = "Enviando vídeo e convertendo...";
+      uploadForm.querySelector('button').disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('video', file);
+
+        const response = await fetch('http://localhost:3000/api/convert-video', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const blob = await response.blob();
+
+        // Criar link para download automático
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3"; // mesma base do nome do vídeo, extensão mp3
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        uploadMsg.textContent = "Conversão concluída. O download deve ter começado.";
+      } catch (error) {
+        uploadMsg.textContent = "Erro: " + error.message;
+      } finally {
+        uploadForm.querySelector('button').disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
