@@ -228,146 +228,98 @@
   </main>
 
   <script>
-  const textoEl = document.getElementById("texto");
-  const btnOuvir = document.getElementById("btnOuvir");
-  const player = document.getElementById("player");
-  const playPauseBtn = document.getElementById("playPauseBtn");
-  const msgErro = document.getElementById("msgErro");
-  const temaToggle = document.getElementById("temaToggle");
+    const textoEl = document.getElementById("texto");
+    const btnOuvir = document.getElementById("btnOuvir");
+    const player = document.getElementById("player");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const msgErro = document.getElementById("msgErro");
+    const temaToggle = document.getElementById("temaToggle");
 
-  let currentAudioUrl = null;
+    let currentAudioUrl = null;
 
-  temaToggle.addEventListener("change", () => {
-    document.body.classList.toggle("dark", temaToggle.checked);
-  });
+    temaToggle.addEventListener("change", () => {
+      document.body.classList.toggle("dark", temaToggle.checked);
+    });
 
-  function limparAudio() {
-    if (!player.paused) player.pause();
-    player.src = "";
-    if (currentAudioUrl) {
-      URL.revokeObjectURL(currentAudioUrl);
-      currentAudioUrl = null;
-    }
-    player.style.display = "none";
-    playPauseBtn.style.display = "none";
-  }
-
-  btnOuvir.addEventListener("click", async () => {
-    const texto = textoEl.value.trim();
-    msgErro.textContent = "";
-    limparAudio();
-
-    if (!texto) {
-      alert("Digite um texto primeiro!");
-      return;
+    function limparAudio() {
+      if (!player.paused) player.pause();
+      player.src = "";
+      if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
+      }
+      player.style.display = "none";
+      playPauseBtn.style.display = "none";
     }
 
-    btnOuvir.disabled = true;
-    btnOuvir.textContent = "Gerando áudio...";
+    btnOuvir.addEventListener("click", async () => {
+      const texto = textoEl.value.trim();
+      msgErro.textContent = "";
+      limparAudio();
 
-    try {
-      const response = await fetch("http://localhost:3000/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: texto }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(Erro ${response.status}: ${errorText});
+      if (!texto) {
+        alert("Digite um texto primeiro!");
+        return;
       }
 
-      const blob = await response.blob();
-      currentAudioUrl = URL.createObjectURL(blob);
-      player.src = currentAudioUrl;
-      player.style.display = "block";
-      player.play();
+      btnOuvir.disabled = true;
+      btnOuvir.textContent = "Gerando áudio...";
 
-      playPauseBtn.style.display = "inline-block";
-      playPauseBtn.textContent = "⏸ Pausar";
+      try {
+        const response = await fetch("http://localhost:3000/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: texto }),
+        });
 
-    } catch (e) {
-      msgErro.textContent = "Erro ao gerar voz: " + e.message;
-    } finally {
-      btnOuvir.disabled = false;
-      btnOuvir.textContent = "🔊 Ouvir Texto";
-    }
-  });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
 
-  playPauseBtn.addEventListener("click", () => {
-    if (player.paused) {
-      player.play();
-      playPauseBtn.textContent = "⏸ Pausar";
-    } else {
-      player.pause();
-      playPauseBtn.textContent = "▶️ Continuar";
-    }
-  });
+        const blob = await response.blob();
+        currentAudioUrl = URL.createObjectURL(blob);
+        player.src = currentAudioUrl;
+        player.style.display = "block";
+        player.play();
 
-  // Alternar entre seções
-  const leitorSection = document.getElementById("leitorSection");
-  const conversorSection = document.getElementById("conversorSection");
-  const menuRadios = document.querySelectorAll('input[name="menuSelect"]');
+        playPauseBtn.style.display = "inline-block";
+        playPauseBtn.textContent = "⏸ Pausar";
 
-  menuRadios.forEach((radio) => {
-    radio.addEventListener("change", () => {
-      if (radio.value === "leitor") {
-        leitorSection.style.display = "flex";
-        conversorSection.style.display = "none";
-      } else {
-        leitorSection.style.display = "none";
-        conversorSection.style.display = "flex";
+      } catch (e) {
+        msgErro.textContent = "Erro ao gerar voz: " + e.message;
+      } finally {
+        btnOuvir.disabled = false;
+        btnOuvir.textContent = "🔊 Ouvir Texto";
       }
     });
-  });
 
-  // NOVO: manipular o envio do form para converter vídeo em MP3 e baixar
-  const uploadForm = document.getElementById("uploadForm");
-  const videoInput = document.getElementById("videoInput");
-  const uploadMsg = document.getElementById("uploadMsg");
-
-  uploadForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // evita o envio normal do form
-
-    uploadMsg.textContent = "";
-    const file = videoInput.files[0];
-    if (!file) {
-      alert("Por favor, selecione um arquivo de vídeo.");
-      return;
-    }
-
-    uploadMsg.textContent = "Convertendo vídeo para MP3...";
-
-    try {
-      const formData = new FormData();
-      formData.append("video", file);
-
-      const response = await fetch("/convert", { // ajuste a URL conforme seu backend
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(Erro ${response.status}: ${errorText});
+    playPauseBtn.addEventListener("click", () => {
+      if (player.paused) {
+        player.play();
+        playPauseBtn.textContent = "⏸ Pausar";
+      } else {
+        player.pause();
+        playPauseBtn.textContent = "▶️ Continuar";
       }
+    });
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3"; // nome do arquivo com extensão mp3
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+    // Alternar entre seções
+    const leitorSection = document.getElementById("leitorSection");
+    const conversorSection = document.getElementById("conversorSection");
+    const menuRadios = document.querySelectorAll('input[name="menuSelect"]');
 
-      uploadMsg.textContent = "Download iniciado!";
-    } catch (err) {
-      uploadMsg.textContent = "Erro ao converter o vídeo.";
-      console.error(err);
-    }
-  });
-</script>
+    menuRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        if (radio.value === "leitor") {
+          leitorSection.style.display = "flex";
+          conversorSection.style.display = "none";
+        } else {
+          leitorSection.style.display = "none";
+          conversorSection.style.display = "flex";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
