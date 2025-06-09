@@ -6,6 +6,7 @@
 <title>Leitor com Voz IA - Tema Claro/Escuro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 <style>
+  /* (Seu CSS original aqui, mantive o mesmo para não bagunçar) */
   :root {
     --bg-light: #f2f2f2;
     --text-light: #222;
@@ -72,6 +73,7 @@
     justify-content: center;
     max-width: 700px;
     margin: auto;
+    overflow-y: auto;
   }
 
   textarea {
@@ -117,7 +119,6 @@
     background-color: var(--btn-hover-dark);
   }
 
-  /* Botão play/pause estilizado */
   #playPauseBtn {
     margin-top: 20px;
     background: #10b981;
@@ -128,26 +129,43 @@
     border-radius: 50px;
     cursor: pointer;
     transition: background 0.3s ease;
-    display: none; /* Começa escondido */
+    display: none;
   }
   #playPauseBtn:hover {
     background: #059669;
   }
 
-  /* Mensagem de erro */
   #msgErro {
     margin-top: 20px;
     color: #ef4444;
     font-weight: 600;
   }
 
-  /* Área principal flex */
   .main-area {
     display: flex;
     flex-direction: column;
   }
 
-  /* Responsivo */
+  /* Estilo para o form de upload */
+  #uploadForm {
+    margin-top: 40px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: var(--container-bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.dark #uploadForm {
+    background-color: #2c2c2c;
+    color: var(--text-dark);
+    border-color: #555;
+  }
+  #uploadForm input[type="file"] {
+    display: block;
+    margin-bottom: 15px;
+  }
+
   @media (max-width: 700px) {
     body {
       flex-direction: column;
@@ -174,7 +192,6 @@
       <input type="checkbox" id="temaToggle" />
       Tema Escuro
     </label>
-    <!-- Futuras opções aqui -->
   </nav>
 
   <main class="container">
@@ -184,12 +201,17 @@
     <button id="playPauseBtn">⏸ Pausar</button>
     <audio id="player" controls style="display:none;"></audio>
     <div id="msgErro"></div>
+
+    <!-- Novo formulário para upload e conversão -->
+    <form id="uploadForm">
+      <h2>Converter vídeo para MP3</h2>
+      <input type="file" id="videoInput" accept="video/*" required />
+      <button type="submit">Converter e Baixar MP3</button>
+      <div id="uploadMsg" style="margin-top:10px; font-weight:600; color:#3b82f6;"></div>
+    </form>
   </main>
 
   <script>
-    const apiKey = "sk_d09dd66da3a6a75cb4e86b8dbe0ddfa17db5e278bb14150c";
-    const voiceId = "NGS0ZsC7j4t4dCWbPdgO";
-
     const textoEl = document.getElementById("texto");
     const btnOuvir = document.getElementById("btnOuvir");
     const player = document.getElementById("player");
@@ -199,7 +221,7 @@
 
     let currentAudioUrl = null;
 
-    // Alterna tema claro/escuro
+    // Tema claro/escuro
     temaToggle.addEventListener("change", () => {
       if (temaToggle.checked) {
         document.body.classList.add("dark");
@@ -208,7 +230,6 @@
       }
     });
 
-    // Função para parar e limpar áudio atual
     function limparAudio() {
       if (!player.paused) player.pause();
       player.src = "";
@@ -239,14 +260,7 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            text: texto,
-            model_id: "eleven_multilingual_v2",
-            voice_settings: {
-              stability: 0.4,
-              similarity_boost: 0.8,
-            },
-          }),
+          body: JSON.stringify({ text: texto }),
         });
 
         if (!response.ok) {
@@ -260,7 +274,6 @@
         player.style.display = "block";
         player.play();
 
-        // Mostrar botão play/pause
         playPauseBtn.style.display = "inline-block";
         playPauseBtn.textContent = "⏸ Pausar";
 
@@ -272,7 +285,6 @@
       }
     });
 
-    // Botão play/pause
     playPauseBtn.addEventListener("click", () => {
       if (player.paused) {
         player.play();
@@ -283,9 +295,59 @@
       }
     });
 
-    // Quando o áudio termina, esconde o botão play/pause
     player.addEventListener("ended", () => {
       playPauseBtn.style.display = "none";
+    });
+
+    // Nova funcionalidade: upload e converter vídeo para MP3
+    const uploadForm = document.getElementById('uploadForm');
+    const videoInput = document.getElementById('videoInput');
+    const uploadMsg = document.getElementById('uploadMsg');
+
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (videoInput.files.length === 0) {
+        alert("Selecione um arquivo de vídeo primeiro.");
+        return;
+      }
+
+      const file = videoInput.files[0];
+      uploadMsg.textContent = "Enviando vídeo e convertendo...";
+      uploadForm.querySelector('button').disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('video', file);
+
+        const response = await fetch('http://localhost:3000/api/convert-video', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const blob = await response.blob();
+
+        // Criar link para download automático
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3"; // mesma base do nome do vídeo, extensão mp3
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        uploadMsg.textContent = "Conversão concluída. O download deve ter começado.";
+      } catch (error) {
+        uploadMsg.textContent = "Erro: " + error.message;
+      } finally {
+        uploadForm.querySelector('button').disabled = false;
+      }
     });
   </script>
 </body>
