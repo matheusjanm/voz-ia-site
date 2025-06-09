@@ -1,54 +1,214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <!-- (head igual ao seu, mantido) -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Leitor com Voz IA - Tema Claro/Escuro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-light: #f2f2f2;
+    --text-light: #222;
+    --container-bg-light: #fff;
+    --btn-bg-light: #4f46e5;
+    --btn-hover-light: #4338ca;
+    --bg-dark: #121212;
+    --text-dark: #eee;
+    --container-bg-dark: #1e1e1e;
+    --btn-bg-dark: #7c3aed;
+    --btn-hover-dark: #6b21a8;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+  }
+  .menu {
+    width: 220px;
+    background-color: var(--container-bg-light);
+    padding: 20px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: background-color 0.3s ease;
+  }
+  body.dark .menu {
+    background-color: var(--container-bg-dark);
+    box-shadow: 2px 0 8px rgba(255,255,255,0.1);
+  }
+  .menu h2 {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+  }
+  .menu label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .container {
+    flex: 1;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 700px;
+    margin: auto;
+    overflow-y: auto;
+  }
+  textarea {
+    width: 100%;
+    height: 140px;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+    background-color: var(--container-bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.dark textarea {
+    background-color: #2c2c2c;
+    color: var(--text-dark);
+    border-color: #555;
+  }
+  button {
+    margin-top: 20px;
+    background-color: var(--btn-bg-light);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background-color: var(--btn-hover-light);
+  }
+  body.dark button {
+    background-color: var(--btn-bg-dark);
+  }
+  body.dark button:hover {
+    background-color: var(--btn-hover-dark);
+  }
+  #playPauseBtn {
+    margin-top: 20px;
+    background: #10b981;
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: none;
+  }
+  #playPauseBtn:hover {
+    background: #059669;
+  }
+  #msgErro {
+    margin-top: 20px;
+    color: #ef4444;
+    font-weight: 600;
+  }
+  .main-area {
+    display: flex;
+    flex-direction: column;
+  }
+  #uploadForm {
+    margin-top: 40px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: var(--container-bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.dark #uploadForm {
+    background-color: #2c2c2c;
+    color: var(--text-dark);
+    border-color: #555;
+  }
+  #uploadForm input[type="file"] {
+    display: block;
+    margin-bottom: 15px;
+  }
+  @media (max-width: 700px) {
+    body {
+      flex-direction: column;
+      height: auto;
+    }
+    .menu {
+      width: 100%;
+      box-shadow: none;
+      flex-direction: row;
+      justify-content: space-around;
+      padding: 10px;
+    }
+    .container {
+      max-width: 100%;
+      padding: 20px 15px;
+    }
+  }
+</style>
 </head>
 <body>
   <nav class="menu">
     <h2>Menu</h2>
     <label>
-      <input type="checkbox" id="temaToggle" /> Tema Escuro
+      <input type="checkbox" id="temaToggle" />
+      Tema Escuro
     </label>
     <label>
-      <input type="radio" name="menuSelect" value="leitor" checked /> Leitor de Texto
+      <input type="radio" name="menuSelect" value="leitor" checked />
+      Leitor de Texto
     </label>
     <label>
-      <input type="radio" name="menuSelect" value="conversor" /> Converter MP4 → MP3
+      <input type="radio" name="menuSelect" value="conversor" />
+      Converter MP4 → MP3
     </label>
     <label>
-      <input type="radio" name="menuSelect" value="transcricao" /> Transcrever Áudio/Vídeo
+      <input type="radio" name="menuSelect" value="transcricao" />
+      Transcrever Áudio/Vídeo
     </label>
   </nav>
 
   <main class="container">
     <!-- Leitor de Texto -->
-    <section id="leitorSection" class="main-area">
-      <!-- ...mesmo conteúdo... -->
-    </section>
+    <section id="leitorSection" class="main-area">[...conteúdo mantido...]</section>
 
     <!-- Conversor de vídeo -->
-    <section id="conversorSection" class="main-area" style="display:none;">
-      <!-- ...mesmo conteúdo... -->
-    </section>
+    <section id="conversorSection" class="main-area" style="display:none;">[...conteúdo mantido...]</section>
 
-    <!-- NOVO: Transcrição de áudio/vídeo -->
+    <!-- Transcrição de Áudio/Vídeo -->
     <section id="transcricaoSection" class="main-area" style="display:none;">
       <h2>Transcrever Áudio/Vídeo para Texto</h2>
       <form id="transcricaoForm">
-        <input type="file" id="audioInput" accept="audio/*,video/*" required />
-        <button type="submit">Transcrever</button>
+        <input type="file" id="transcricaoInput" accept="audio/*,video/*" required />
+        <button type="submit">Enviar e Transcrever</button>
       </form>
-      <div id="transcricaoResultado" style="margin-top:15px; font-weight:600; white-space:pre-wrap;"></div>
+      <div id="transcricaoMsg" style="margin-top:15px; font-weight:600;"></div>
+      <textarea id="transcricaoTexto" placeholder="A transcrição aparecerá aqui..." readonly style="margin-top:20px; height:180px;"></textarea>
     </section>
   </main>
 
-  <script>
-    // ... (script já existente mantido) ...
+  <script>[...todo seu script atual aqui...]
 
+    // Atualização do menu para incluir transcrição
     const transcricaoSection = document.getElementById("transcricaoSection");
-    const transcricaoForm = document.getElementById("transcricaoForm");
-    const transcricaoResultado = document.getElementById("transcricaoResultado");
-
     menuRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
         leitorSection.style.display = "none";
@@ -61,26 +221,36 @@
       });
     });
 
-    // Transcrição de áudio ou vídeo
-    transcricaoForm?.addEventListener("submit", async (e) => {
+    // Script de transcrição
+    const transcricaoForm = document.getElementById("transcricaoForm");
+    const transcricaoInput = document.getElementById("transcricaoInput");
+    const transcricaoMsg = document.getElementById("transcricaoMsg");
+    const transcricaoTexto = document.getElementById("transcricaoTexto");
+
+    transcricaoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      transcricaoResultado.textContent = "Transcrevendo...";
-      const file = document.getElementById("audioInput").files[0];
-      if (!file) return;
+      const file = transcricaoInput.files[0];
+      if (!file) return alert("Selecione um arquivo.");
+
+      transcricaoMsg.textContent = "Enviando e transcrevendo...";
+      transcricaoTexto.value = "";
 
       const formData = new FormData();
-      formData.append("media", file);
+      formData.append("file", file);
 
       try {
-        const resposta = await fetch("http://localhost:3000/api/transcrever", {
+        const response = await fetch("http://localhost:3000/api/transcribe", {
           method: "POST",
           body: formData,
         });
 
-        const dados = await resposta.json();
-        transcricaoResultado.textContent = dados.texto || "Não foi possível transcrever.";
+        if (!response.ok) throw new Error(await response.text());
+
+        const data = await response.json();
+        transcricaoTexto.value = data.transcricao || "(Sem conteúdo retornado)";
+        transcricaoMsg.textContent = "Transcrição concluída!";
       } catch (err) {
-        transcricaoResultado.textContent = "Erro ao transcrever: " + err.message;
+        transcricaoMsg.textContent = "Erro: " + err.message;
       }
     });
   </script>
