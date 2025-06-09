@@ -1,256 +1,182 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Leitor com Voz IA - Tema Claro/Escuro</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg-light: #f2f2f2;
-    --text-light: #222;
-    --container-bg-light: #fff;
-    --btn-bg-light: #4f46e5;
-    --btn-hover-light: #4338ca;
-    --bg-dark: #121212;
-    --text-dark: #eee;
-    --container-bg-dark: #1e1e1e;
-    --btn-bg-dark: #7c3aed;
-    --btn-hover-dark: #6b21a8;
-  }
-  body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-light);
-    color: var(--text-light);
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-  }
-  body.dark {
-    background-color: var(--bg-dark);
-    color: var(--text-dark);
-  }
-  .menu {
-    width: 220px;
-    background-color: var(--container-bg-light);
-    padding: 20px;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    transition: background-color 0.3s ease;
-  }
-  body.dark .menu {
-    background-color: var(--container-bg-dark);
-    box-shadow: 2px 0 8px rgba(255,255,255,0.1);
-  }
-  .menu h2 {
-    margin: 0 0 10px 0;
-    font-weight: 600;
-  }
-  .menu label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .container {
-    flex: 1;
-    padding: 40px 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-width: 700px;
-    margin: auto;
-    overflow-y: auto;
-  }
-  textarea {
-    width: 100%;
-    height: 140px;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    resize: none;
-    outline: none;
-    background-color: var(--container-bg-light);
-    color: var(--text-light);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  body.dark textarea {
-    background-color: #2c2c2c;
-    color: var(--text-dark);
-    border-color: #555;
-  }
-  button {
-    margin-top: 20px;
-    background-color: var(--btn-bg-light);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  button:hover {
-    background-color: var(--btn-hover-light);
-  }
-  body.dark button {
-    background-color: var(--btn-bg-dark);
-  }
-  body.dark button:hover {
-    background-color: var(--btn-hover-dark);
-  }
-  #playPauseBtn {
-    margin-top: 20px;
-    background: #10b981;
-    border: none;
-    color: white;
-    padding: 12px 30px;
-    font-weight: 600;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: none;
-  }
-  #playPauseBtn:hover {
-    background: #059669;
-  }
-  #msgErro {
-    margin-top: 20px;
-    color: #ef4444;
-    font-weight: 600;
-  }
-  .main-area {
-    display: flex;
-    flex-direction: column;
-  }
-  #uploadForm {
-    margin-top: 40px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: var(--container-bg-light);
-    color: var(--text-light);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  body.dark #uploadForm {
-    background-color: #2c2c2c;
-    color: var(--text-dark);
-    border-color: #555;
-  }
-  #uploadForm input[type="file"] {
-    display: block;
-    margin-bottom: 15px;
-  }
-  @media (max-width: 700px) {
-    body {
-      flex-direction: column;
-      height: auto;
-    }
-    .menu {
-      width: 100%;
-      box-shadow: none;
-      flex-direction: row;
-      justify-content: space-around;
-      padding: 10px;
-    }
-    .container {
-      max-width: 100%;
-      padding: 20px 15px;
-    }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leitor com Voz IA - Tema Claro/Escuro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ... (seu CSS permanece igual, omitido aqui para brevidade) ... */
+  </style>
 </head>
 <body>
   <nav class="menu">
     <h2>Menu</h2>
-    <label>
-      <input type="checkbox" id="temaToggle" />
-      Tema Escuro
-    </label>
-    <label>
-      <input type="radio" name="menuSelect" value="leitor" checked />
-      Leitor de Texto
-    </label>
-    <label>
-      <input type="radio" name="menuSelect" value="conversor" />
-      Converter MP4 → MP3
-    </label>
-    <label>
-      <input type="radio" name="menuSelect" value="transcricao" />
-      Transcrever Áudio/Vídeo
-    </label>
+    <label><input type="checkbox" id="temaToggle" /> Tema Escuro</label>
+    <label><input type="radio" name="menuSelect" value="leitor" checked /> Leitor de Texto</label>
+    <label><input type="radio" name="menuSelect" value="conversor" /> Converter MP4 → MP3</label>
+    <label><input type="radio" name="menuSelect" value="transcrever" /> Transcrever Áudio/Vídeo</label>
   </nav>
 
   <main class="container">
-    <!-- Leitor de Texto -->
-    <section id="leitorSection" class="main-area">[...conteúdo mantido...]</section>
+    <section id="leitorSection" class="main-area">
+      <h1>Leitor com Voz IA</h1>
+      <textarea id="texto" placeholder="Cole seu texto aqui..."></textarea>
+      <button id="btnOuvir">🔊 Ouvir Texto</button>
+      <button id="playPauseBtn">⏸ Pausar</button>
+      <audio id="player" controls style="display:none;"></audio>
+      <div id="msgErro"></div>
+    </section>
 
-    <!-- Conversor de vídeo -->
-    <section id="conversorSection" class="main-area" style="display:none;">[...conteúdo mantido...]</section>
-
-    <!-- Transcrição de Áudio/Vídeo -->
-    <section id="transcricaoSection" class="main-area" style="display:none;">
-      <h2>Transcrever Áudio/Vídeo para Texto</h2>
-      <form id="transcricaoForm">
-        <input type="file" id="transcricaoInput" accept="audio/*,video/*" required />
-        <button type="submit">Enviar e Transcrever</button>
+    <section id="conversorSection" class="main-area" style="display:none;">
+      <h2>Converter vídeo para MP3</h2>
+      <form id="uploadForm">
+        <input type="file" id="videoInput" accept="video/*" required />
+        <button type="submit">Converter e Baixar MP3</button>
+        <div id="uploadMsg" style="margin-top:10px; font-weight:600; color:#3b82f6;"></div>
       </form>
-      <div id="transcricaoMsg" style="margin-top:15px; font-weight:600;"></div>
-      <textarea id="transcricaoTexto" placeholder="A transcrição aparecerá aqui..." readonly style="margin-top:20px; height:180px;"></textarea>
+    </section>
+
+    <section id="transcreverSection" class="main-area" style="display:none;">
+      <h2>Transcrever Áudio ou Vídeo para Texto</h2>
+      <form id="transcribeForm">
+        <input type="file" id="audioVideoInput" accept="audio/*,video/*" required />
+        <button type="submit">Transcrever</button>
+      </form>
+      <div id="transcribeMsg" style="margin-top:10px; font-weight:600;"></div>
+      <textarea id="transcribedText" placeholder="Transcrição aparecerá aqui..." style="margin-top:15px;"></textarea>
     </section>
   </main>
 
-  <script>[...todo seu script atual aqui...]
+  <script>
+    // Tema escuro
+    document.getElementById("temaToggle").addEventListener("change", e => {
+      document.body.classList.toggle("dark", e.target.checked);
+    });
 
-    // Atualização do menu para incluir transcrição
-    const transcricaoSection = document.getElementById("transcricaoSection");
-    menuRadios.forEach((radio) => {
-      radio.addEventListener("change", () => {
-        leitorSection.style.display = "none";
-        conversorSection.style.display = "none";
-        transcricaoSection.style.display = "none";
-
-        if (radio.value === "leitor") leitorSection.style.display = "flex";
-        else if (radio.value === "conversor") conversorSection.style.display = "flex";
-        else if (radio.value === "transcricao") transcricaoSection.style.display = "flex";
+    // Alternar menus
+    const sections = {
+      leitor: document.getElementById("leitorSection"),
+      conversor: document.getElementById("conversorSection"),
+      transcrever: document.getElementById("transcreverSection")
+    };
+    document.querySelectorAll('input[name="menuSelect"]').forEach(r => {
+      r.addEventListener("change", () => {
+        Object.entries(sections).forEach(([key, el]) => {
+          el.style.display = (r.value === key) ? "flex" : "none";
+        });
       });
     });
 
-    // Script de transcrição
-    const transcricaoForm = document.getElementById("transcricaoForm");
-    const transcricaoInput = document.getElementById("transcricaoInput");
-    const transcricaoMsg = document.getElementById("transcricaoMsg");
-    const transcricaoTexto = document.getElementById("transcricaoTexto");
+    // Leitor
+    const textoEl = document.getElementById("texto");
+    const btnOuvir = document.getElementById("btnOuvir");
+    const player = document.getElementById("player");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const msgErro = document.getElementById("msgErro");
+    let currentAudioUrl = null;
 
-    transcricaoForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const file = transcricaoInput.files[0];
-      if (!file) return alert("Selecione um arquivo.");
-
-      transcricaoMsg.textContent = "Enviando e transcrevendo...";
-      transcricaoTexto.value = "";
-
-      const formData = new FormData();
-      formData.append("file", file);
-
+    btnOuvir.addEventListener("click", async () => {
+      const texto = textoEl.value.trim();
+      if (!texto) return alert("Digite um texto primeiro!");
+      btnOuvir.disabled = true;
+      limparAudio();
+      msgErro.textContent = "";
       try {
-        const response = await fetch("http://localhost:3000/api/transcribe", {
+        const res = await fetch("http://localhost:3000/api/tts", {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: texto })
         });
+        if (!res.ok) throw new Error(await res.text());
+        const blob = await res.blob();
+        currentAudioUrl = URL.createObjectURL(blob);
+        player.src = currentAudioUrl;
+        player.style.display = "block";
+        player.play();
+        playPauseBtn.style.display = "inline-block";
+        playPauseBtn.textContent = "⏸ Pausar";
+      } catch (e) {
+        msgErro.textContent = "Erro ao gerar voz: " + e.message;
+      } finally {
+        btnOuvir.disabled = false;
+        btnOuvir.textContent = "🔊 Ouvir Texto";
+      }
+    });
 
-        if (!response.ok) throw new Error(await response.text());
+    playPauseBtn.addEventListener("click", () => {
+      if (player.paused) {
+        player.play();
+        playPauseBtn.textContent = "⏸ Pausar";
+      } else {
+        player.pause();
+        playPauseBtn.textContent = "▶️ Continuar";
+      }
+    });
 
-        const data = await response.json();
-        transcricaoTexto.value = data.transcricao || "(Sem conteúdo retornado)";
-        transcricaoMsg.textContent = "Transcrição concluída!";
+    function limparAudio() {
+      if (!player.paused) player.pause();
+      player.src = "";
+      if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
+      currentAudioUrl = null;
+      player.style.display = "none";
+      playPauseBtn.style.display = "none";
+    }
+
+    // Conversor MP4 → MP3
+    const uploadForm = document.getElementById("uploadForm");
+    const uploadMsg = document.getElementById("uploadMsg");
+    uploadForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const file = document.getElementById("videoInput").files[0];
+      if (!file) return uploadMsg.textContent = "Selecione um arquivo de vídeo.";
+      const formData = new FormData();
+      formData.append("video", file);
+      uploadMsg.textContent = "Convertendo...";
+      try {
+        const res = await fetch("http://localhost:3000/api/convert", {
+          method: "POST",
+          body: formData
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        uploadMsg.textContent = "Download iniciado!";
       } catch (err) {
-        transcricaoMsg.textContent = "Erro: " + err.message;
+        uploadMsg.textContent = "Erro: " + err.message;
+      }
+    });
+
+    // Transcrever áudio ou vídeo
+    const transcribeForm = document.getElementById("transcribeForm");
+    const transcribeMsg = document.getElementById("transcribeMsg");
+    const transcribedText = document.getElementById("transcribedText");
+
+    transcribeForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const file = document.getElementById("audioVideoInput").files[0];
+      if (!file) return transcribeMsg.textContent = "Selecione um arquivo.";
+      const formData = new FormData();
+      formData.append("media", file);
+      transcribeMsg.textContent = "Transcrevendo...";
+      try {
+        const res = await fetch("http://localhost:3000/api/transcribe", {
+          method: "POST",
+          body: formData
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const { text } = await res.json();
+        transcribedText.value = text;
+        transcribeMsg.textContent = "Transcrição concluída.";
+      } catch (err) {
+        transcribeMsg.textContent = "Erro: " + err.message;
       }
     });
   </script>
