@@ -6,13 +6,14 @@
 <title>Leitor com Voz IA - Tema Claro/Escuro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 <style>
-  /* (CSS original mantido) */
+  /* (Seu CSS original mantido) */
   :root {
     --bg-light: #f2f2f2;
     --text-light: #222;
     --container-bg-light: #fff;
     --btn-bg-light: #4f46e5;
     --btn-hover-light: #4338ca;
+
     --bg-dark: #121212;
     --text-dark: #eee;
     --container-bg-dark: #1e1e1e;
@@ -113,7 +114,6 @@
   body.dark button {
     background-color: var(--btn-bg-dark);
   }
-
   body.dark button:hover {
     background-color: var(--btn-hover-dark);
   }
@@ -130,7 +130,6 @@
     transition: background 0.3s ease;
     display: none;
   }
-
   #playPauseBtn:hover {
     background: #059669;
   }
@@ -155,13 +154,11 @@
     color: var(--text-light);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
   body.dark #uploadForm {
     background-color: #2c2c2c;
     color: var(--text-dark);
     border-color: #555;
   }
-
   #uploadForm input[type="file"] {
     display: block;
     margin-bottom: 15px;
@@ -319,6 +316,55 @@
           conversorSection.style.display = "flex";
         }
       });
+    });
+
+    // --------------------
+    // Conversor de Vídeo
+    // --------------------
+    const uploadForm = document.getElementById("uploadForm");
+    const uploadMsg = document.getElementById("uploadMsg");
+
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById("videoInput");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        uploadMsg.textContent = "Selecione um arquivo de vídeo primeiro.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("video", file);
+
+      uploadMsg.textContent = "Convertendo vídeo...";
+
+      try {
+        const response = await fetch("http://localhost:3000/api/convert", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.replace(/\.[^/.]+$/, "") + ".mp3";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        uploadMsg.textContent = "Download iniciado com sucesso!";
+      } catch (err) {
+        uploadMsg.textContent = "Erro: " + err.message;
+      }
     });
   </script>
 </body>
