@@ -1,13 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leitor com Voz IA - Tema Claro/Escuro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    /* ... (seu CSS permanece igual, omitido aqui para brevidade) ... */
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Leitor com Voz IA - Tema Claro/Escuro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  /* (CSS original mantido) */
+  :root {
+    --bg-light: #f2f2f2;
+    --text-light: #222;
+    --container-bg-light: #fff;
+    --btn-bg-light: #4f46e5;
+    --btn-hover-light: #4338ca;
+
+    --bg-dark: #121212;
+    --text-dark: #eee;
+    --container-bg-dark: #1e1e1e;
+    --btn-bg-dark: #7c3aed;
+    --btn-hover-dark: #6b21a8;
+  }
+  /* ... restante do CSS mantido ... */
+</style>
 </head>
 <body>
   <nav class="menu">
@@ -15,7 +29,7 @@
     <label><input type="checkbox" id="temaToggle" /> Tema Escuro</label>
     <label><input type="radio" name="menuSelect" value="leitor" checked /> Leitor de Texto</label>
     <label><input type="radio" name="menuSelect" value="conversor" /> Converter MP4 → MP3</label>
-    <label><input type="radio" name="menuSelect" value="transcrever" /> Transcrever Áudio/Vídeo</label>
+    <label><input type="radio" name="menuSelect" value="transcricao" /> Transcrever Áudio/Vídeo</label>
   </nav>
 
   <main class="container">
@@ -37,59 +51,67 @@
       </form>
     </section>
 
-    <section id="transcreverSection" class="main-area" style="display:none;">
-      <h2>Transcrever Áudio ou Vídeo para Texto</h2>
-      <form id="transcribeForm">
-        <input type="file" id="audioVideoInput" accept="audio/*,video/*" required />
+    <section id="transcricaoSection" class="main-area" style="display:none;">
+      <h2>Transcrever Áudio/Vídeo</h2>
+      <form id="transcricaoForm">
+        <input type="file" id="audioInput" accept="audio/*,video/*" required />
         <button type="submit">Transcrever</button>
+        <div id="transcricaoMsg" style="margin-top:10px; font-weight:600;"></div>
+        <textarea id="resultadoTranscricao" readonly placeholder="Texto transcrito aparecerá aqui..." style="margin-top:15px; height:180px;"></textarea>
       </form>
-      <div id="transcribeMsg" style="margin-top:10px; font-weight:600;"></div>
-      <textarea id="transcribedText" placeholder="Transcrição aparecerá aqui..." style="margin-top:15px;"></textarea>
     </section>
   </main>
 
   <script>
-    // Tema escuro
-    document.getElementById("temaToggle").addEventListener("change", e => {
-      document.body.classList.toggle("dark", e.target.checked);
-    });
-
-    // Alternar menus
-    const sections = {
-      leitor: document.getElementById("leitorSection"),
-      conversor: document.getElementById("conversorSection"),
-      transcrever: document.getElementById("transcreverSection")
-    };
-    document.querySelectorAll('input[name="menuSelect"]').forEach(r => {
-      r.addEventListener("change", () => {
-        Object.entries(sections).forEach(([key, el]) => {
-          el.style.display = (r.value === key) ? "flex" : "none";
-        });
-      });
-    });
-
-    // Leitor
     const textoEl = document.getElementById("texto");
     const btnOuvir = document.getElementById("btnOuvir");
     const player = document.getElementById("player");
     const playPauseBtn = document.getElementById("playPauseBtn");
     const msgErro = document.getElementById("msgErro");
+    const temaToggle = document.getElementById("temaToggle");
+    const leitorSection = document.getElementById("leitorSection");
+    const conversorSection = document.getElementById("conversorSection");
+    const transcricaoSection = document.getElementById("transcricaoSection");
+    const menuRadios = document.querySelectorAll('input[name="menuSelect"]');
+
     let currentAudioUrl = null;
+
+    temaToggle.addEventListener("change", () => {
+      document.body.classList.toggle("dark", temaToggle.checked);
+    });
+
+    function limparAudio() {
+      if (!player.paused) player.pause();
+      player.src = "";
+      if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
+      }
+      player.style.display = "none";
+      playPauseBtn.style.display = "none";
+    }
 
     btnOuvir.addEventListener("click", async () => {
       const texto = textoEl.value.trim();
-      if (!texto) return alert("Digite um texto primeiro!");
-      btnOuvir.disabled = true;
-      limparAudio();
       msgErro.textContent = "";
+      limparAudio();
+      if (!texto) {
+        alert("Digite um texto primeiro!");
+        return;
+      }
+      btnOuvir.disabled = true;
+      btnOuvir.textContent = "Gerando áudio...";
       try {
-        const res = await fetch("http://localhost:3000/api/tts", {
+        const response = await fetch("http://localhost:3000/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: texto })
+          body: JSON.stringify({ text: texto }),
         });
-        if (!res.ok) throw new Error(await res.text());
-        const blob = await res.blob();
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        const blob = await response.blob();
         currentAudioUrl = URL.createObjectURL(blob);
         player.src = currentAudioUrl;
         player.style.display = "block";
@@ -114,32 +136,42 @@
       }
     });
 
-    function limparAudio() {
-      if (!player.paused) player.pause();
-      player.src = "";
-      if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-      currentAudioUrl = null;
-      player.style.display = "none";
-      playPauseBtn.style.display = "none";
-    }
+    menuRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        leitorSection.style.display = "none";
+        conversorSection.style.display = "none";
+        transcricaoSection.style.display = "none";
 
-    // Conversor MP4 → MP3
+        if (radio.value === "leitor") leitorSection.style.display = "flex";
+        else if (radio.value === "conversor") conversorSection.style.display = "flex";
+        else if (radio.value === "transcricao") transcricaoSection.style.display = "flex";
+      });
+    });
+
     const uploadForm = document.getElementById("uploadForm");
     const uploadMsg = document.getElementById("uploadMsg");
-    uploadForm.addEventListener("submit", async e => {
+
+    uploadForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const file = document.getElementById("videoInput").files[0];
-      if (!file) return uploadMsg.textContent = "Selecione um arquivo de vídeo.";
+      const fileInput = document.getElementById("videoInput");
+      const file = fileInput.files[0];
+      if (!file) {
+        uploadMsg.textContent = "Selecione um arquivo de vídeo primeiro.";
+        return;
+      }
       const formData = new FormData();
       formData.append("video", file);
-      uploadMsg.textContent = "Convertendo...";
+      uploadMsg.textContent = "Convertendo vídeo...";
       try {
-        const res = await fetch("http://localhost:3000/api/convert", {
+        const response = await fetch("http://localhost:3000/api/convert", {
           method: "POST",
-          body: formData
+          body: formData,
         });
-        if (!res.ok) throw new Error(await res.text());
-        const blob = await res.blob();
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -148,35 +180,41 @@
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        uploadMsg.textContent = "Download iniciado!";
+        uploadMsg.textContent = "Download iniciado com sucesso!";
       } catch (err) {
         uploadMsg.textContent = "Erro: " + err.message;
       }
     });
 
-    // Transcrever áudio ou vídeo
-    const transcribeForm = document.getElementById("transcribeForm");
-    const transcribeMsg = document.getElementById("transcribeMsg");
-    const transcribedText = document.getElementById("transcribedText");
+    const transcricaoForm = document.getElementById("transcricaoForm");
+    const transcricaoMsg = document.getElementById("transcricaoMsg");
+    const resultadoTranscricao = document.getElementById("resultadoTranscricao");
 
-    transcribeForm.addEventListener("submit", async e => {
+    transcricaoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const file = document.getElementById("audioVideoInput").files[0];
-      if (!file) return transcribeMsg.textContent = "Selecione um arquivo.";
+      const fileInput = document.getElementById("audioInput");
+      const file = fileInput.files[0];
+      if (!file) {
+        transcricaoMsg.textContent = "Selecione um arquivo de áudio ou vídeo.";
+        return;
+      }
       const formData = new FormData();
-      formData.append("media", file);
-      transcribeMsg.textContent = "Transcrevendo...";
+      formData.append("file", file);
+      transcricaoMsg.textContent = "Transcrevendo...";
       try {
-        const res = await fetch("http://localhost:3000/api/transcribe", {
+        const response = await fetch("http://localhost:3000/api/transcribe", {
           method: "POST",
-          body: formData
+          body: formData,
         });
-        if (!res.ok) throw new Error(await res.text());
-        const { text } = await res.json();
-        transcribedText.value = text;
-        transcribeMsg.textContent = "Transcrição concluída.";
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        const data = await response.json();
+        resultadoTranscricao.value = data.transcricao || "Nenhum texto retornado.";
+        transcricaoMsg.textContent = "Transcrição concluída!";
       } catch (err) {
-        transcribeMsg.textContent = "Erro: " + err.message;
+        transcricaoMsg.textContent = "Erro: " + err.message;
       }
     });
   </script>
